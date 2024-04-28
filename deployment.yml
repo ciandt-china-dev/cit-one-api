@@ -1,0 +1,45 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ flow-agent-oneapi.project_name }}"
+  labels:
+    app: "{{ flow-agent-oneapi.project_name }}"
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /api/status
+    alb.ingress.kubernetes.io/healthcheck-port: '3000'
+spec:
+  type: NodePort
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: "{{ flow-agent-oneapi.project_name }}"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ flow-agent-oneapi.project_name }}"
+  labels:
+    app: "{{ flow-agent-oneapi.project_name }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "{{ flow-agent-oneapi.project_name }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ flow-agent-oneapi.project_name }}"
+    spec:
+      containers:
+        - name: "{{ flow-agent-oneapi.project_name }}"
+          image: "{{ flow-agent-oneapi.main_docker_image }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: "{{ flow-agent-oneapi.project_name }}"
+            - secretRef:
+                name: "{{ flow-agent-oneapi.project_name }}"
